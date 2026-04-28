@@ -1,0 +1,511 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Theodolite Engineering Manual System</title>
+
+<link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@600&family=Roboto:wght@400;700&display=swap" rel="stylesheet">
+
+<style>
+:root {
+    --bg: #0f172a;
+    --text: #f8fafc;
+    --card: rgba(30, 41, 59, 0.8);
+    --accent: #fbbf24; 
+    --nav-bg: rgba(15, 23, 42, 0.95);
+}
+
+.light {
+    --bg: #f8fafc;
+    --text: #0f172a;
+    --card: rgba(255, 255, 255, 0.9);
+    --accent: #2563eb;
+    --nav-bg: rgba(248, 250, 252, 0.95);
+}
+
+body {
+    margin: 0;
+    font-family: 'Roboto', sans-serif;
+    background: var(--bg);
+    color: var(--text);
+    transition: 0.4s;
+    scroll-behavior: smooth;
+    line-height: 1.6;
+}
+
+body::before {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: url('construction.jpg') center/cover no-repeat;
+
+    /* Blur effect */
+    filter: blur(0.5px);
+    transform: scale(1.1);
+
+    z-index: -2;
+    pointer-events: none; /* prevents blocking clicks */
+}
+
+/* Dark overlay for readability */
+body::after {
+    content: "";
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.7);
+    z-index: -1;
+}
+
+
+/* --- SCROLLABLE SLIM NAVIGATION --- */
+nav {
+    position: fixed;
+    top: 0;
+    width: 100%;
+    background: var(--nav-bg);
+    backdrop-filter: blur(10px);
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    padding: 0 3%;
+    height: 50px;
+    z-index: 1000;
+    border-bottom: 1px solid rgba(255,255,255,0.1);
+}
+
+.nav-links {
+    display: flex;
+    gap: 2px;
+    overflow-x: auto; /* Enables horizontal scroll */
+    white-space: nowrap; /* Prevents links from wrapping to a new line */
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none; /* Hides scrollbar for Firefox */
+    margin-right: 10px;
+}
+
+.nav-links::-webkit-scrollbar {
+    display: none; /* Hides scrollbar for Chrome/Safari */
+}
+
+nav a {
+    color: var(--text);
+    text-decoration: none;
+    font-weight: 700;
+    font-size: 0.7rem;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    padding: 5px 12px;
+    border-radius: 4px;
+    transition: 0.3s;
+    flex-shrink: 0; /* Prevents buttons from squishing */
+}
+
+nav a:hover {
+    color: var(--accent);
+    background: rgba(255,255,255,0.05);
+}
+
+.toggle {
+    cursor: pointer;
+    background: var(--accent);
+    color: #000;
+    padding: 4px 12px;
+    border-radius: 15px;
+    font-weight: 800;
+    font-size: 0.65rem;
+    text-transform: uppercase;
+    flex-shrink: 0;
+}
+
+header {
+    height: 100vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    text-align: center;
+}
+
+header h1 {
+    font-family: 'Montserrat';
+    font-size: clamp(2em, 8vw, 3.5em);
+    text-shadow: 2px 2px 15px rgba(0,0,0,0.7);
+    margin-bottom: 10px;
+}
+
+section {
+    padding: 80px 12%;
+    opacity: 1; /* Make it visible by default */
+    transform: none;
+}
+
+section.show {
+    opacity: 1;
+    transform: translateY(0);
+}
+
+h2 {
+    color: var(--accent);
+    font-family: 'Montserrat';
+    font-size: 1.8em;
+    border-bottom: 2px solid var(--accent);
+    display: inline-block;
+    margin-bottom: 30px;
+}
+
+.grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(280px,1fr));
+    gap: 25px;
+}
+
+.card {
+    background: var(--card);
+    padding: 25px;
+    border-radius: 12px;
+    border-top: 4px solid var(--accent);
+}
+
+.card h3 { margin-top: 0; color: var(--accent); }
+
+img {
+    width: 100%;
+    max-width: 600px;
+    display: block;
+    margin: 30px auto;
+    border-radius: 10px;
+}
+
+button {
+    padding: 12px 25px;
+    border: none;
+    border-radius: 25px;
+    background: var(--accent);
+    color: #000;
+    font-weight: bold;
+    cursor: pointer;
+    transition: 0.3s;
+}
+
+button:hover { transform: scale(1.05); }
+
+.tooltip {
+    position: fixed;
+    display: none;
+    background: var(--accent);
+    color: #000;
+    padding: 8px;
+    border-radius: 4px;
+    font-size: 12px;
+    font-weight: bold;
+    z-index: 2000;
+}
+</style>
+</head>
+
+<body>
+
+<nav>
+    <div class="nav-links">
+        <a href="#planning">Planning</a>
+        <a href="#sketch">Sketch</a>
+        <a href="#parts">Parts</a>
+        <a href="#operation">Operation</a>
+        <a href="#diagram">Diagram</a>
+        <a href="#3d">3D</a>
+        <a href="#revision">Revision</a>
+        <a href="#references">References</a>
+    </div>
+    <div class="toggle" onclick="toggleMode()">Theme</div>
+</nav>
+
+<header>
+<div>
+    <h1> Digital Theodolite<br>
+    User Manual
+    </h1>
+    <p>12028 GEEL 2<br>
+    BSCE-2B</p>
+    <a href="#planning"><button>Enter System</button></a>
+</div>
+</header>
+
+<section id="planning">
+<h2>I. Planning Stage (Concept)</h2>
+<div class="grid">
+    <div class="card">
+        <h3>Product Functions</h3>
+        <ul>
+            <li>Precise Horizontal Angle Measurement</li>
+            <li>Vertical Angle & Slope Determination</li>
+            <li>Land Surveying Traverse Control</li>
+            <li>Construction Site Layout Alignment</li>
+        </ul>
+    </div>
+    <div class="card">
+        <h3>Purpose & Target</h3>
+        <p><b>Purpose:</b> To provide a technical, interactive guide for accurate instrument setup and data collection.</p>
+        <p><b>Target User:</b> Civil Engineering students and beginner field surveyors.</p>
+    </div>
+</div>
+</section>
+
+<section id="sketch">
+<h2>II. Sketching Stage (Manual)</h2>
+<p>Below is the hand-drawn layout of the system interface used as the blueprint for this digital version.</p>
+<img src="sketch.jpg" alt="Hand-drawn UI Layout">
+</div>
+</section>
+
+<section id="operation">
+<h2>III. Content Writing (Operations)</h2>
+
+<!-- INTRO -->
+<div class="card" style="width: 100%;">
+    <h3>Overview</h3>
+    <p>
+        The operation of a theodolite involves proper setup, leveling, and precise alignment 
+        to ensure accurate angle measurements. The following procedure outlines the standard 
+        method used in field surveying.
+    </p>
+</div>
+
+<!-- STEP BY STEP -->
+<div class="card" style="margin-top: 20px;">
+    <h3>Step-by-Step Procedure</h3>
+    <ol>
+        <li><b>Stationing:</b> Firmly position the tripod over the survey point and secure the legs into the ground.</li>
+        <li><b>Centering:</b> Use the optical plummet to align the instrument directly above the ground point.</li>
+        <li><b>Rough Leveling:</b> Adjust tripod legs to center the circular bubble.</li>
+        <li><b>Fine Leveling:</b> Use the leveling screws to center the plate level bubble precisely.</li>
+        <li><b>Backsight (BS):</b> Aim the telescope at the reference point and set the horizontal angle to zero.</li>
+        <li><b>Foresight (FS):</b> Rotate the instrument toward the target point to obtain the angle reading.</li>
+    </ol>
+</div>
+
+<!-- IMPORTANT NOTES -->
+<div class="card" style="margin-top: 20px;">
+    <h3>Important Notes</h3>
+    <ul>
+        <li>Ensure the instrument is properly leveled before taking any readings.</li>
+        <li>Avoid disturbing the tripod during measurement.</li>
+        <li>Repeat measurements if necessary to improve accuracy.</li>
+        <li>Check calibration of the instrument before use.</li>
+    </ul>
+</div>
+
+<!-- EXAMPLE -->
+<div class="card" style="margin-top: 20px;">
+    <h3>Example Calculation</h3>
+    <p>
+        Station A (Backsight): 15° 20' 00"<br>
+        Station B (Foresight): 110° 45' 30"<br><br>
+        <b>Horizontal Angle = 110° 45' 30" − 15° 20' 00"</b><br>
+        <b>Result = 95° 25' 30"</b>
+    </p>
+</div>
+
+</section>
+
+<section id="parts">
+    <h2>IV. Technical Parts</h2>
+
+    <div class="card" style="width: 100%; text-align: center; margin-bottom: 30px;">
+        <p>Reference the diagram below for the primary physical components of a digital theodolite.</p>
+
+        <img src="theo_parts.jpg" 
+             alt="Labeled Theodolite Parts" 
+             style="width: 100%; max-width: 600px; height: auto; border: 2px solid var(--accent); border-radius: 8px;">
+    </div>
+
+   <h3 style="text-align:center; margin-top:20px;">Interactive Parts</h3>
+
+<div class="grid">
+
+    <div class="card">
+        <h3>Telescope</h3>
+        <p>The sighting tube containing lenses to magnify the target.</p>
+    </div>
+
+    <div class="card">
+        <h3>Eyepiece</h3>
+        <p>The lens the surveyor looks through; adjustable for focus.</p>
+    </div>
+
+    <div class="card">
+        <h3>Leveling Screws</h3>
+        <p>Used to center the plate bubble for accurate leveling.</p>
+    </div>
+
+    <div class="card">
+        <h3>Digital LCD</h3>
+        <p>Displays horizontal and vertical angle measurements.</p>
+    </div>
+
+    <div class="card">
+        <h3>Optical Plummet</h3>
+        <p>Used to center the instrument exactly over a ground point.</p>
+    </div>
+
+    <div class="card">
+        <h3>Tribrach</h3>
+        <p>The base that connects the theodolite securely to the tripod.</p>
+    </div>
+
+</div>
+</section>
+
+
+<section id="diagram">
+<h2>V. Engineering Geometry</h2>
+
+<div class="card" style="text-align: center;">
+
+    <p>
+        While the previous section outlines the setup and operational procedure of the theodolite,
+        this section focuses on the actual measurement of horizontal angles between two points.
+    </p>
+
+    <p>
+        In surveying practice, the instrument is first aligned with a backsight (BS), then rotated
+        toward a foresight (FS). The difference between these readings represents the horizontal angle.
+    </p>
+
+    <!-- EMBEDDED VIDEO -->
+    <div style="margin: 20px 0;">
+        <iframe width="100%" height="315"
+            src="https://www.youtube.com/embed/QnbU5jT6PKY"
+            title="Theodolite Angle Measurement Tutorial"
+            frameborder="0"
+            allowfullscreen
+            style="border-radius: 10px;">
+        </iframe>
+    </div>
+
+    <p>
+        The demonstration above illustrates how angular readings are obtained in the field using
+        the backsight and foresight method. This process is fundamental in surveying tasks such as
+        traverse computation and site alignment.
+    </p>
+
+    <p style="font-size: 0.85em; opacity: 0.8;">
+        Note: Due to the precision required in actual surveying work, users are encouraged to
+        consult standard references and guided practice for complete procedural mastery.
+    </p>
+
+</div>
+</section>
+
+
+<section id="3d">
+  <h2>VI. Digital Design (3D Model)</h2>
+  <div class="sketchfab-embed-wrapper"> 
+    <iframe title="Digital Theodolite" frameborder="0" allowfullscreen src="https://sketchfab.com/models/3d571bdfe1dc4a01bc0b25714f70b674/embed?ui_theme=dark" style="width: 100%; height: 450px; border-radius: 10px;"> </iframe> 
+  </div>
+</section>
+
+<section id="revision">
+<h2>VII. Revision Stage (Proof of Work)</h2>
+
+<div class="grid">
+
+    <div class="card">
+        <h3>Draft Version</h3>
+        <img src="draft.png" alt="Draft Image">
+
+        <p style="margin-top:10px; font-size: 0.9em; opacity: 0.9;">
+            The draft version presents a basic and simple user interface, focusing only on core layout and structure.
+            At this stage, no visual enhancements, styling improvements, or interactive elements were applied.
+        </p>
+    </div>
+
+    <div class="card">
+        <h3>Final Version</h3>
+        <img src="final.png" alt="Final Image">
+
+        <p style="margin-top:10px; font-size: 0.9em; opacity: 0.9;">
+            The final version demonstrates significant improvements in both visual design and user experience.
+            A structured layout, improved typography, and a themed background were introduced to enhance the overall interface.
+            The addition of a blurred construction site background creates a more immersive environment while maintaining readability.
+            Navigation and interactive elements were also refined, resulting in a more polished, professional, and user-friendly system.
+        </p>
+    </div>
+
+</div>
+</section>
+
+<div class="card" style="margin-top: 20px; width: 100%;">
+    <h3>Explanation of Changes</h3>
+    <ul>
+        <li><b>Navigation:</b> Slimmed down the navigation bar height and enabled horizontal scrolling for improved accessibility on smaller screens.</li>
+
+        <li><b>Header Layout:</b> Adjusted title spacing and alignment to create a cleaner hierarchy, placing “User Manual” directly below the main title with balanced spacing.</li>
+
+        <li><b>Visual Design:</b> Added a blurred construction site background to enhance thematic consistency while maintaining text readability.</li>
+
+        <li><b>Typography:</b> Improved font sizing, spacing, and contrast for better readability and a more professional appearance.</li>
+
+        <li><b>Content Structure:</b> Organized sections more clearly and added descriptive explanations under components for better understanding.</li>
+
+        <li><b>Operations Section:</b> Expanded instructions and added supporting visuals/examples to make the procedure more comprehensive.</li>
+
+        <li><b>Multimedia Integration:</b> Embedded a video demonstration to supplement written instructions and improve user learning experience.</li>
+
+        <li><b>Interactivity Adjustment:</b> Replaced non-functional clickable elements with static explanatory cards to ensure clarity and usability.</li>
+
+        <li><b>Overall UI Enhancement:</b> Refined layout, spacing, and card design to achieve a more polished, modern, and user-friendly interface.</li>
+    </ul>
+</div>
+</section>
+
+<section id="refs">
+<h2>VIII. References</h2>
+<div class="card">
+<ul>
+<li>Course materials and lecture discussions in Surveying.</li>
+<li>Group knowledge based on prior coursework in Computer Fundamentals and Programming.</li>
+<li>AI-assisted support for code structure and interface design.</li>
+</ul>
+</div>
+</section>
+
+<section>
+<h2>AI Utilization Statement</h2>
+<div class="card">
+<p><b>Declaration:</b> The overall concept, design decisions, and content of this system were developed by the group. 
+Artificial Intelligence was used only as a support tool for refining code structure, improving CSS styling, and assisting in implementing certain features.
+
+The group possesses prior knowledge in programming from foundational courses, which enabled independent understanding, modification, and integration of the generated code.
+
+All technical procedures and engineering-related content were reviewed and verified by the group to ensure accuracy and alignment with course standards.</p>
+</div>
+</section>
+
+<div class="tooltip" id="tooltip"></div>
+
+<script>
+const sections = document.querySelectorAll("section");
+window.addEventListener("scroll", () => {
+sections.forEach(s => {
+if(s.getBoundingClientRect().top < window.innerHeight - 100){
+s.classList.add("show");
+}
+});
+});
+
+function toggleMode(){ document.body.classList.toggle("light"); }
+
+function tip(text){
+const t = document.getElementById("tooltip");
+t.innerText = text;
+t.style.display = "block";
+document.onmousemove = e => {
+t.style.left = e.pageX + 10 + "px";
+t.style.top = e.pageY + 10 + "px";
+};
+setTimeout(()=> t.style.display="none", 2500);
+}
+</script>
+
+</body>
+</html>
